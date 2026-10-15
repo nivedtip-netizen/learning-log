@@ -1,0 +1,4 @@
+# simulation and synthesis outputs
+*.vvp
+*.vcd
+synth_*.txt
