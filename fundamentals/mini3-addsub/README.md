@@ -5,7 +5,7 @@ Everything here is built from real gates (`and`, `or`, `xor`, `not`, `xnor`, `no
 so every line of Verilog maps to something you could draw on paper.
 
 **Result:** both blocks pass exhaustive tests (512/512 and 256/256 cases).
-The adder/subtractor synthesizes to 25 gates and the comparator to 22.
+The adder/subtractor synthesizes to about 23 gates and the comparator to about 18 (exact numbers vary a little between Yosys versions).
 
 ## 1. What it is and where it goes
 

@@ -16,8 +16,8 @@ wave: sim
 	gtkwave addsub4.vcd &
 
 synth:
-	yosys -q -p "read_verilog $(RTL); synth -flatten -top addsub4; abc -g AND,NAND,OR,NOR,XOR,XNOR; opt_clean; tee -o synth_addsub4.txt stat"
-	yosys -q -p "read_verilog $(RTL); synth -flatten -top comparator4; abc -g AND,NAND,OR,NOR,XOR,XNOR; opt_clean; tee -o synth_comparator4.txt stat"
+	yosys -q -p "read_verilog $(RTL); synth -flatten -top addsub4; abc -g gates; opt_clean; tee -o synth_addsub4.txt stat"
+	yosys -q -p "read_verilog $(RTL); synth -flatten -top comparator4; abc -g gates; opt_clean; tee -o synth_comparator4.txt stat"
 	@echo "--- addsub4 ---";     grep -A10 "Number of cells" synth_addsub4.txt
 	@echo "--- comparator4 ---"; grep -A10 "Number of cells" synth_comparator4.txt
 
