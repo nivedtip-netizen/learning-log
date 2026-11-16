@@ -1,0 +1,87 @@
+[
+ {
+  "project": "p1.1-alu",
+  "title": "P1.1: testbench model computes SRA as a logical shift",
+  "body": "The ALU testbench's expected value for SRA mixed signed and unsigned operands inside one `?:`, so Verilog evaluated the whole expression as unsigned and the model did a logical shift. The DUT was right; the model was wrong.\n\nFix: compute each case in its own statement with explicit `$signed`."
+ },
+ {
+  "project": "p1.3-fsm",
+  "title": "P1.3: testbench variable named `matches` does not compile as SystemVerilog",
+  "body": "`matches` is a reserved keyword in SystemVerilog (pattern matching). Compiling the FSM testbench with `-g2012` failed.\n\nFix: renamed the variable."
+ },
+ {
+  "project": "p1.4-fifo",
+  "title": "P1.4: testbench never applies reset",
+  "body": "`reg rst_n = 0;` starts at 0, so there is no negedge and an `always @(posedge clk or negedge rst_n)` block never sees reset. The FIFO started with X pointers.\n\nFix: drive reset explicitly after the clocks start (0 -> 1 with clock edges in between)."
+ },
+ {
+  "project": "p1.4-fifo",
+  "title": "P1.4: $realtime counts in seconds in the async FIFO bench",
+  "body": "The RTL files had no `` `timescale ``, so the default unit made `$realtime` and the metastability window wrong.\n\nFix: `` `timescale 1ns/1ps `` in every RTL file."
+ },
+ {
+  "project": "p1.4-fifo",
+  "title": "P1.4: binary-pointer CDC bug passes the data checks",
+  "body": "With binary pointers synchronized (seeded `BUG_BIN`), data still arrived in order: a wrong synchronized value lasts one cycle and the equality compares hide it.\n\nFix (testbench): added the invariant 'the read side never sees more data than was written'. It fires 172 / 663 times at the unequal clock ratios."
+ },
+ {
+  "project": "p1.5-uart",
+  "title": "P1.5: FIFO accepts a push while full if a pop happens the same cycle",
+  "body": "The FIFO's rule 'full + pop accepts a push' made the producer's count of accepted bytes wrong, and the UART loopback test lost track of bytes.\n\nFix: simpler contract `accepted = push && !full` (no combinational path from pop to push acceptance). Same change in the P1.4 FIFO."
+ },
+ {
+  "project": "p1.5-uart",
+  "title": "P1.5: RX restarts on a framing error",
+  "body": "After a bad stop bit the line is still low, and the receiver took it as the start bit of a new frame, producing garbage bytes.\n\nFix: new WAIT_HI state: after a framing error, wait for the line to go high before looking for a start bit."
+ },
+ {
+  "project": "p3.3-axi4lite",
+  "title": "P3.3: early BVALID only caught by a timeout",
+  "body": "The seeded `BUG_EARLY_B` (B response before both AW and W were taken) made the bench hang until the timeout instead of failing with a clear message.\n\nFix: B-ordering monitor that checks every B against the writes accepted so far. It catches the bug with a clear message on 3 of 5 seeds; the other 2 still end in the timeout, so this stays partly open."
+ },
+ {
+  "project": "p4-rv32i",
+  "title": "P4: register-file write-through makes a combinational loop in the single-cycle core",
+  "body": "The register file bypass (write data visible on the read port in the same cycle) is needed for WB -> ID in the pipeline, but in the single-cycle core it closes a loop: read -> ALU -> write data -> read. Simulation hung.\n\nFix: `BYPASS` parameter, 1 in the pipeline, 0 in the single-cycle core."
+ },
+ {
+  "project": "p4-rv32i",
+  "title": "P4: ISA test overwrites its own case number",
+  "body": "The generated ISA test kept the failing case number in x3 (gp) and also used x3 as a result register, so a failure reported the wrong case.\n\nFix: case number in x28, which no test uses."
+ },
+ {
+  "project": "p4-rv32i",
+  "title": "P4: pipeline ends the test before the TOHOST store retires",
+  "body": "The testbench detected the store to TOHOST on the data-memory port (MEM stage), two cycles before it retired, so the last instructions were missing from the trace.\n\nFix: detect TOHOST from the retirement port."
+ },
+ {
+  "project": "p4-rv32i",
+  "title": "P4: DPI-C reference model does not link",
+  "body": "Verilator compiles the C file as C++, so the exported functions got mangled names and the link failed.\n\nFix: wrap the DPI functions in `extern \"C\"`."
+ },
+ {
+  "project": "p4-rv32i",
+  "title": "P4: random programs store registers that were never written",
+  "body": "The core's register file has no reset (X), the C model starts at 0. A random program that stored an unwritten register (for example the loop counter x30) gave a mismatch that was not a core bug.\n\nFix: the generator writes x1-x30 with random values first."
+ },
+ {
+  "project": "p5.1-formal-fifo",
+  "title": "P5.1: formal properties see free signals instead of the FIFO pointers",
+  "body": "The properties were in a wrapper and used hierarchical names (`dut.wptr`). Yosys does not resolve those before flattening, so they became unconstrained wires and the base case failed on impossible traces.\n\nFix: include the properties inside the FIFO under `` `ifdef FORMAL ``."
+ },
+ {
+  "project": "p5.2-cdc-sta",
+  "title": "P5.2: gate-level simulation does not elaborate",
+  "body": "The Yosys netlist has no parameters (they are fixed at synthesis), but the RTL testbench passes DIVISOR/PAR_EN/PAR_ODD, so elaboration failed.\n\nFix: a thin shim module with the original parameters that checks them and instantiates the netlist."
+ },
+ {
+  "project": "p5.5-interview-rtl",
+  "title": "P5.5: false failures from the testbench ($countones, array overflow)",
+  "body": "Two testbench bugs: `$countones` returned wrong values in Icarus 12 inside this expression, and the skid/FIFO scoreboard arrays overflowed after 4,096 / 8,192 words.\n\nFix: a small `ones4` function, and indexes that wrap."
+ },
+ {
+  "project": "p5.7-systolic-int8",
+  "title": "P5.7: first beat of a back-to-back matrix is lost",
+  "body": "The testbench drove the next matrix while the array was still reading out the previous one (in_ready low), so the first beat was dropped and every result was missing one product.\n\nFix: the testbench now waits for in_ready (proper valid/ready), and the design accepts a new beat on the last read-out row and clears the accumulators there, so matrices follow with no gap."
+ }
+]
