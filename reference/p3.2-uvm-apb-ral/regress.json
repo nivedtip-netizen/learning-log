@@ -1,0 +1,17 @@
+{
+  "title": "APB UVM + RAL regression",
+  "seeds": 20,
+  "timeout": 1200,
+  "build": [
+    "mkdir -p logs",
+    "vlib work && vlog -sv +incdir+$UVM_HOME/src -f files.f"
+  ],
+  "tests": [
+    {"name": "apb_reset_test",       "cmd": "vsim -c top +UVM_TESTNAME=apb_reset_test -sv_seed {seed} -do 'run -all; quit'"},
+    {"name": "apb_bitbash_test",     "cmd": "vsim -c top +UVM_TESTNAME=apb_bitbash_test -sv_seed {seed} -do 'run -all; quit'"},
+    {"name": "apb_random_test",      "cmd": "vsim -c top +UVM_TESTNAME=apb_random_test -sv_seed {seed} -do 'run -all; quit'"},
+    {"name": "apb_w1c_test",         "cmd": "vsim -c top +UVM_TESTNAME=apb_w1c_test -sv_seed {seed} -do 'run -all; quit'"},
+    {"name": "apb_bad_addr_test",    "cmd": "vsim -c top +UVM_TESTNAME=apb_bad_addr_test -sv_seed {seed} -do 'run -all; quit'"},
+    {"name": "apb_wait_stress_test", "cmd": "vsim -c top +UVM_TESTNAME=apb_wait_stress_test -sv_seed {seed} -do 'run -all; quit'"}
+  ]
+}
