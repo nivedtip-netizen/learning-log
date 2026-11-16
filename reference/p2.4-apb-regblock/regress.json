@@ -1,0 +1,16 @@
+{
+  "title": "APB register block regression (Icarus)",
+  "seeds": 10,
+  "build": [
+    "mkdir -p logs",
+    "iverilog -g2012 -Ptb_apb.WAIT=0 -o logs/w0.out rtl/apb_regs.v tb/tb_apb.v",
+    "iverilog -g2012 -Ptb_apb.WAIT=1 -o logs/w1.out rtl/apb_regs.v tb/tb_apb.v",
+    "iverilog -g2012 -Ptb_apb.WAIT=3 -o logs/w3.out rtl/apb_regs.v tb/tb_apb.v"
+  ],
+  "tests": [
+    {"name": "random_wait0", "cmd": "vvp -n logs/w0.out +SEED={seed} +N=2000"},
+    {"name": "random_wait1", "cmd": "vvp -n logs/w1.out +SEED={seed} +N=2000"},
+    {"name": "random_wait3", "cmd": "vvp -n logs/w3.out +SEED={seed} +N=2000"},
+    {"name": "short_200",    "cmd": "vvp -n logs/w1.out +SEED={seed} +N=200"}
+  ]
+}
