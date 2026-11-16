@@ -2,3 +2,22 @@
 *.vvp
 *.vcd
 synth_*.txt
+
+# reference projects: build and run outputs
+logs/
+logs_bugs/
+rand/
+obj_*/
+sim_build*/
+results.xml
+__pycache__/
+*.out
+*.stat
+*.elf
+*.bin
+*.dis
+*.log
+uart_netlist.v
+reference/**/sim
+reference/**/rv32i_ref
+dashboard*.html

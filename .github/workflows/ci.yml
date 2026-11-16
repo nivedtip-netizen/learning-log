@@ -1,0 +1,39 @@
+# CI for the reference projects: lint with Verible, then the quick open-source simulations.
+# Runs on every push and pull request. The seeded-bug runs are not part of CI (they are meant to fail).
+name: ci
+on: [push, pull_request]
+
+jobs:
+  lint:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install Verible
+        run: |
+          URL=$(curl -sSL https://api.github.com/repos/chipsalliance/verible/releases/latest |
+                grep -oE 'https://[^"]+linux-static-x86_64\.tar\.gz' | head -1)
+          curl -sSL -o verible.tar.gz "$URL"
+          mkdir verible && tar xzf verible.tar.gz -C verible --strip-components=1
+          echo "$PWD/verible/bin" >> "$GITHUB_PATH"
+      - name: Verible lint (synthesizable RTL)
+        # not run before the first push: style rules may need tuning, so lint warns but does not fail CI yet
+        continue-on-error: true
+        run: |
+          find reference -path '*/rtl/*' \( -name '*.v' -o -name '*.sv' \) -print0 |
+            xargs -0 verible-verilog-lint --rules=-explicit-parameter-storage-type,-no-trailing-spaces,-line-length,-parameter-name-style,-module-filename,-explicit-begin,-unpacked-dimensions-range-ordering
+
+  sim:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y iverilog verilator yosys gcc-riscv64-unknown-elf python3-pip
+          pip install --break-system-packages "cocotb==2.1.0" numpy
+      - name: Smoke simulations (Icarus, Yosys formal, Verilator SVA)
+        run: WITH_VERILATOR=1 bash reference/ci/smoke.sh
+      - name: cocotb UART test (Icarus)
+        run: make -C reference/p5.3-cocotb-uart
+      - name: Random RV32I regression (20 programs) and coverage
+        run: make -C reference/p4-rv32i random SEEDS=20 LEN=2000
