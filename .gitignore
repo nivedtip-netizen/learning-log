@@ -21,3 +21,4 @@ uart_netlist.v
 reference/**/sim
 reference/**/rv32i_ref
 dashboard*.html
+resume/
