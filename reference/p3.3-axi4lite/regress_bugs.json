@@ -1,0 +1,17 @@
+{
+  "title": "AXI4-Lite bug hunt: every seeded bug must fail",
+  "seeds": 5,
+  "logdir": "logs_bugs",
+  "html": "dashboard_bugs.html",
+  "build": [
+    "mkdir -p logs_bugs",
+    "for b in BUG_WSTRB BUG_EARLY_B BUG_RRESP BUG_B_DROP BUG_RDATA; do iverilog -g2012 -D$b -o logs_bugs/$b.out rtl/axil_regs.v tb/tb_axil.v || exit 1; done"
+  ],
+  "tests": [
+    {"name": "BUG_WSTRB",   "cmd": "vvp -n logs_bugs/BUG_WSTRB.out +SEED={seed} +N=200"},
+    {"name": "BUG_EARLY_B", "cmd": "vvp -n logs_bugs/BUG_EARLY_B.out +SEED={seed} +N=200"},
+    {"name": "BUG_RRESP",   "cmd": "vvp -n logs_bugs/BUG_RRESP.out +SEED={seed} +N=200"},
+    {"name": "BUG_B_DROP",  "cmd": "vvp -n logs_bugs/BUG_B_DROP.out +SEED={seed} +N=200"},
+    {"name": "BUG_RDATA",   "cmd": "vvp -n logs_bugs/BUG_RDATA.out +SEED={seed} +N=200"}
+  ]
+}

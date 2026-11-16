@@ -1,0 +1,13 @@
+{
+  "title": "AXI4-Lite slave regression (Icarus)",
+  "seeds": 20,
+  "build": [
+    "mkdir -p logs",
+    "iverilog -g2012 -o logs/axil.out rtl/axil_regs.v tb/tb_axil.v"
+  ],
+  "tests": [
+    {"name": "random",        "cmd": "vvp -n logs/axil.out +SEED={seed} +MODE=0 +N=400"},
+    {"name": "back_to_back",  "cmd": "vvp -n logs/axil.out +SEED={seed} +MODE=1 +N=400"},
+    {"name": "backpressure",  "cmd": "vvp -n logs/axil.out +SEED={seed} +MODE=2 +N=400"}
+  ]
+}
