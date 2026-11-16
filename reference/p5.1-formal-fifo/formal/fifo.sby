@@ -1,0 +1,29 @@
+# SymbiYosys version (run on your laptop once sby is installed:  sby -f formal/fifo.sby)
+# Not run in the cloud build: sby was not available there. The Makefile does the same
+# proofs with plain Yosys 'sat -tempinduct'.
+[tasks]
+prove
+cover
+bug
+
+[options]
+prove: mode prove
+prove: depth 20
+cover: mode cover
+cover: depth 40
+bug:   mode bmc
+bug:   depth 40
+
+[engines]
+smtbmc
+
+[script]
+prove: read -formal -DFORMAL -DNO_COVER -I. sync_fifo.v
+cover: read -formal -DFORMAL -I. sync_fifo.v
+bug:   read -formal -DFORMAL -DNO_COVER -DBUG_RARE -I. sync_fifo.v
+chparam -set DEPTH 16 sync_fifo
+prep -top sync_fifo
+
+[files]
+../rtl/sync_fifo.v
+fifo_props.vh
